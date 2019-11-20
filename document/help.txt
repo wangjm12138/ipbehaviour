@@ -1,0 +1,5 @@
+https://blog.csdn.net/u010536377/article/details/50525785 CLOF
+https://blog.csdn.net/ygfrancois/article/details/89373430 离群
+https://plot.ly/python/plotly-fundamentals/ plotly
+https://zhuanlan.zhihu.com/p/83140406 plotly好文章
+https://zhuanlan.zhihu.com/p/87163211 plotly好文章
