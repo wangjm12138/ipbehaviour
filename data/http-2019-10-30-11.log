@@ -1,0 +1,11 @@
+10/30/19-11:01:07.193843	HTTP/1.1	POST	unified-new-exc.hismarttv.com	/json/bin/exception/unifiedapp/	-	0	180.126.241.104	65308	220.243.133.94	80
+10/30/19-11:01:07.194192	-	-	-	/libhtp::request_uri_not_seen	200	0	115.211.243.49	35300	220.243.137.15	80
+10/30/19-11:01:07.194246	-	-	-	/libhtp::request_uri_not_seen	200	1244	218.205.245.71	60278	220.243.178.198	80
+10/30/19-11:01:07.194453	HTTP/1.1	POST	unified-exc.hismarttv.com	/json/exception/wx	-	0	125.85.50.247	50412	220.243.137.15	80
+10/30/19-11:01:07.195257	-	-	-	/libhtp::request_uri_not_seen	204	0	223.74.204.106	9968	220.243.137.31	80
+10/30/19-11:01:07.195660	HTTP/1.1	POST	unified-exc.hismarttv.com	/json/exception/himsg	-	0	111.15.155.128	3223	220.243.137.15	80
+10/30/19-11:01:07.194477	-	-	-	/libhtp::request_uri_not_seen	200	0	221.229.16.71	26798	220.243.137.15	80
+10/30/19-11:01:07.195877	HTTP/1.1	POST	unified-new-exc.hismarttv.com	/json/bin/exception/vod	-	0	182.32.177.111	20892	220.243.133.94	80
+10/30/19-11:01:07.194786	-	-	-	/libhtp::request_uri_not_seen	404	50	58.220.72.59	34495	220.243.147.249	80
+10/30/19-11:01:07.196198	HTTP/1.1	POST	unified-exc.hismarttv.com	/json/exception/himsg	-	0	223.89.35.43	24015	220.243.137.15	80
+10/30/19-11:01:07.196199	HTTP/1.1	POST	unified-exc.hismarttv.com	/json/exception/himsg	-	0	223.89.35.43	24015	220.243.137.16	80
