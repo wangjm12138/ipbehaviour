@@ -105,10 +105,32 @@ class MyLogger(object):
 		self.logger.level = level
 
 	def disable_file(self):
-		self.logger.removeHandler(self.logger.w_filehandler)
+		handlers = self.logger.handlers
+		if len(handlers) > 0 and self.logger.w_filehandler in handlers:
+			self.logger.removeHandler(self.logger.w_filehandler)
+		else:
+			print("log file is already disable")
+
+	def enable_file(self):
+		handlers = self.logger.handlers
+		if len(handlers) > 0 and self.logger.w_filehandler not in handlers:
+			self.logger.removeHandler(self.logger.w_filehandler)
+		else:
+			print("log file is already ensable")
 
 	def disable_console(self):
-		self.logger.removeHandler(self.logger.w_consolehandle)
+		handlers = self.logger.handlers
+		if len(handlers) > 0 and self.logger.w_consolehandle in handlers:
+			self.logger.removeHandler(self.logger.w_consolehandle)
+		else:
+			print("console is already disable")
+
+	def enable_console(self):
+		handlers = self.logger.handlers
+		if len(handlers) > 0 and self.logger.w_consolehandle not in handlers:
+			self.logger.removeHandler(self.logger.w_consolehandle)
+		else:
+			print("console is already enable")
 
 
 #config=Configuration()
