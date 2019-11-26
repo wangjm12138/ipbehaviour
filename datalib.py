@@ -1,5 +1,4 @@
 import os
-import re
 import numpy as np
 import pandas as pd
 import requests
@@ -9,7 +8,7 @@ import base64
 import hashlib
 import socket
 import struct
-from feature_engine import Feature_engine
+from utils import check_ip
 from utils import Configuration 
 from utils import MyLogger
 config = Configuration()
@@ -19,28 +18,7 @@ LOGGER = LOGGER_CONTROL.getLogger()
 
 requests.packages.urllib3.disable_warnings()
 
-IPBEHAVIOUR_DB='ipbehaviour.db'
-regular = r'^(((25[0-5]|2[0-4]\d|1\d{2})|([1-9]?\d))\.){3}((25[0-5]|2[0-4]\d|1\d{2})|([1-9]?\d))$'
-def check_ip(fuc):
-    def wrapper(*args,**kwargs):
-        if kwargs.get('ip'):
-            ip = kwargs['ip']
-        else:
-            ip = args[1]
-        pattern = re.compile(regular)    
-        if isinstance(ip, list):
-            for item in ip:
-                m = pattern.match(item)
-                if m is None:
-                    raise ValueError("IP vaild:%s"%item)
-            return fuc(*args,**kwargs)
-        else:
-            #LOGGER.info(ip,type(ip))
-            m = pattern.match(ip)
-            if m is None:
-                raise ValueError("IP vaild:%s"%ip)
-            return fuc(*args,**kwargs)
-    return wrapper     
+IPBEHAVIOUR_DB='ipbehaviour.db'    
 
 class IPHandle(object):
 
@@ -52,9 +30,22 @@ class IPHandle(object):
         self.dbscan = None
         self.cblof = None
 
+    @property
+    def content(self):
+        return self.http_log_content
+
+    @content.setter
+    def content(self, http_log_content):
+        if type(http_log_content) == pd.core.frame.DataFrame:
+            if http_log_content is None or len(http_log_content)==0:
+                raise ValueError("http_log_content is empty or not !")
+        else:
+            raise TypeError('http_log_content type error!')
+        self.http_log_content = http_log_content
+
     @classmethod
     @check_ip
-    def find_geoip(cls,ip=None,dbinsert=True,dbsearch=True,tbsearch=True):
+    def search_geoip(cls,ip=None,dbinsert=True,dbsearch=True,tbsearch=True):
         """
             geographical表结构:{ip,country,area,region,ciry,county,
                         isp,country_id,area_id,region_id,city_id,county_id,isp_id}
@@ -119,7 +110,7 @@ class IPHandle(object):
 
     @classmethod
     @check_ip
-    def find_userip(cls,ip=None,url=None,certId=None,certKey=None,\
+    def search_userip(cls,ip=None,url=None,certId=None,certKey=None,\
                     dbinsert=True,dbsearch=True,o2search=True,config=None):
         """
             输入参数ip支持列表，dbsearch和o2search的输入参数控制从db查询还是o2查询，从o2查询dbinsert控制是否插入db。
@@ -255,22 +246,40 @@ class IPHandle(object):
         LOGGER.info(result)
         return result
 
-    def feature_engine(self,dbscan=True,cblof=True):
-        engine = Feature_engine(self.http_log_content)
-        if dbscan:
-            conn = sqlite3.connect(IPBEHAVIOUR_DB)
-            cursor = conn.cursor()
-            select_str = 'select ip from cloudip'
-            try:
-                cursor.execute(select_str)
-                wangsu_iplist = cursor.fetchall()
-            except Exception as e:
-                LOGGER.info("The ipbehaviour.db select error %s"%(str(e)))
-            finally:
-                conn.close()
-            self.dbscan_feature = engine.dbscan_feature(wangsu_iplist)
-        if cblof:
-            self.cblof_feature = engine.cblof_feature()
+    @classmethod
+    def get_wangsuip(cls):
+        conn = sqlite3.connect(IPBEHAVIOUR_DB)
+        cursor = conn.cursor()
+        select_str = 'select ip from cloudip'
+        try:
+            cursor.execute(select_str)
+            result = cursor.fetchall()
+            wangsu_iplist = [item[0] for item in result]
+            #print('xxxxxxxxxxxxx')
+        except Exception as e:
+            LOGGER.info("The ipbehaviour.db select error %s"%(str(e)))
+        finally:
+            conn.close()
+        return wangsu_iplist
+
+#     def feature_engine(self,dbscan=True,cblof=True):
+#         engine = Feature_engine(self.http_log_content)
+#         if dbscan:
+#             conn = sqlite3.connect(IPBEHAVIOUR_DB)
+#             cursor = conn.cursor()
+#             select_str = 'select ip from cloudip'
+#             try:
+#                 cursor.execute(select_str)
+#                 result = cursor.fetchall()
+#                 wangsu_iplist = [item[0] for item in result]
+#                 print('xxxxxxxxxxxxx')
+#             except Exception as e:
+#                 LOGGER.info("The ipbehaviour.db select error %s"%(str(e)))
+#             finally:
+#                 conn.close()
+#             self.dbscan_feature = engine.dbscan_feature(wangsu_iplist)
+#         if cblof:
+#             self.cblof_feature = engine.cblof_feature()
 #         return self.dbscan_feature,self.cblof_feature
     
     def read_http_log(self,flag=True):
@@ -298,28 +307,3 @@ class IPHandle(object):
                 content = {k:v for k,v in zip(dict_keys,values)}
                 self.http_log_content = self.http_log_content.append(content,ignore_index=True)
         return self.http_log_content
-#                if flag == True:
-#                    if src_ip !=None and src_ip not in src_ip_list:
-#                        src_ip_list.append(src_ip)
-#                        #LOGGER.info("src_ip:%s"%src_ip) 
-#                        src_ip_info = self.find_ip(src_ip)
-#                        if len(src_ip_info) == 0:
-#                            continue
-#                        src_ip_info['src_port']=src_port
-#                        #LOGGER.info(src_ip,src_ip_info)
-#                        self.http_log_main = self.http_log_main.append(src_ip_info,ignore_index=True)
-#                    
-#                    #LOGGER.info("dest_ip:%s"%dest_ip)    
-#                    dest_ip_info = self.find_ip(dest_ip)
-#                    dest_ip_info['src_ip']=src_ip
-#                    dest_ip_info['timestamp']=timestamp
-#                    dest_ip_info['dest_port']=dest_port
-#                    dest_ip_info['host']=[host]
-#                    dest_ip_info['params']=[params]
-#                    dest_ip_info['status']=[status]
-#                    dest_ip_info['size']=[size]
-#                    dest_ip_info['method']=[method]
-#                    dest_ip_info['flow_num']=1
-#                    #LOGGER.info(dest_ip_info)
-#                    #LOGGER.info("===========")
-#                    self.http_log_assit = self.http_log_assit.append(dest_ip_info,ignore_index=True)

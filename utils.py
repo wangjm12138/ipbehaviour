@@ -1,10 +1,52 @@
 # -*- coding: utf-8 -*-
+import re
 import os
 import six
 import time
-import configparser
 import logging
+import pandas as pd
+import configparser
+from functools import wraps
 from logging.handlers import RotatingFileHandler
+
+
+regular = r'^(((25[0-5]|2[0-4]\d|1\d{2})|([1-9]?\d))\.){3}((25[0-5]|2[0-4]\d|1\d{2})|([1-9]?\d))$'
+def check_ip(fuc):
+	@wraps(fuc)
+	def wrapper(*args,**kwargs):
+		if kwargs.get('ip'):
+				ip = kwargs['ip']
+		else:
+				ip = args[1]
+		pattern = re.compile(regular)
+		if isinstance(ip, list):
+			for item in ip:
+				m = pattern.match(item)
+				if m is None:
+					raise ValueError("IP vaild:%s"%item)
+			return fuc(*args,**kwargs)
+		else:
+			#LOGGER.info(ip,type(ip))
+			m = pattern.match(ip)
+			if m is None:
+				raise ValueError("IP vaild:%s"%ip)
+			return fuc(*args,**kwargs)
+	return wrapper     
+
+def check_content(fuc):
+	@wraps(fuc)
+	def wrapper(*args,**kwargs):
+		if kwargs.get('http_log_content'):
+				content = kwargs['ip']
+		else:
+				content = args[1]
+		if type(content) == pd.core.frame.DataFrame:
+				if content is None or len(content)==0:
+					raise ValueError("http_log_content is empty or not !")
+		else:
+			raise TypeError('http_log_content type error!')
+		return fuc(*args,**kwargs)
+	return wrapper     
 
 class TypeWithDefault(type):
 	def __init__(cls, *args,**kwargs):
