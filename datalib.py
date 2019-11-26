@@ -128,27 +128,36 @@ class IPHandle(object):
         #global cfgpath
         global IPBEHAVIOUR_DB
         dberror,retry = 0,0
-        dbitems = []
+        dbitems,dbresip = [],[]
         dbselect_result = []
         dbselect,dbselect_sub = "",""
         dbselect_main = "SELECT * FROM cloudip WHERE "
         dbinsert = "INSERT INTO cloudip VALUES ('{ipint}','{ip}','{status}','{customerOperateTime}','{operator}', \
                                       '{reportTime}','{dataCenter}','{commodityName}','{customerName}', \
                                      '{consoleAccount}','{isBackUp}','{saleName}','{org}','{phone}')"
+        dbkeys = ('ipint','ip','status','customerOperateTime','operator','reportTime','dataCenter',\
+                  'commodityName','customerName','consoleAccount','isBackUp','saleName','org','phone')
 
 
         ip_str = ""
+        ipint_sig = 0
+        ipint_lis = []
         result,result_content = [],[]
         customerIpJson_dict = {}
         ### construct select and insert
         if isinstance(ip, str):
-            ipint = socket.ntohl(struct.unpack("I",socket.inet_aton(str(ip)))[0])
-            dbselect_sub = ' ipint == %s '%(ipint)
+            ipint_sig = socket.ntohl(struct.unpack("I",socket.inet_aton(str(ip)))[0])
+            dbselect_sub = ' ipint == %s '%(ipint_sig)
             ip_str = ip
         elif isinstance(ip, list):
             ip = list(set(ip))
-            ipint = sorted([socket.ntohl(struct.unpack("I",socket.inet_aton(str(item)))[0]) for item in ip])
-            dbselect_sub = ' ipint >= %s and ipint <= %s '%(ipint[0],ipint[-1])
+            ipint_lis = [socket.ntohl(struct.unpack("I",socket.inet_aton(str(item)))[0]) for item in ip]
+            for i,item in enumerate(ipint_lis):
+                if i != len(ipint_lis)-1:
+                    dbselect_sub += ' ipint == %s or '%(item)
+                else:
+                    dbselect_sub += ' ipint == %s '%(item)
+            #dbselect_sub = ' ipint >= %s and ipint <= %s '%(ipint[0],ipint[-1])
             ip_str = ",".join(ip)
         else:
             raise ValueError('Ip type error!')
@@ -178,10 +187,20 @@ class IPHandle(object):
             except Exception as e:
                 dberror = 1
                 LOGGER.info("The ipbehaviour.db select error %s"%(str(e)))
-            finally:
-                conn.close()
-   
-        if (dbsearch == False or dberror or len(dbselect_result) == 0) and o2search:
+        ### if ip is list ,db 没有找到所有IP
+            if isinstance(ip, list) and len(dbselect_result) != 0 and len(ipint_lis) > len(dbselect_result) and dberror == 0:
+                dbip = [item[1] for item in dbselect_result]
+                dbresip = list(set(ip) - set(dbip))
+                ip_str = ",".join(dbresip)
+                for item in dbselect_result:
+                    combine = dict(zip(dbkeys,item))
+                    dbitems.append(combine)
+                LOGGER.info("From ipbehaviour.db couldip:%s"%",".join(dbip))
+                #LOGGER.info(dbitems)
+                
+            
+        if (dbsearch == False or dberror or len(dbselect_result) == 0 or len(dbresip)>0) and o2search:
+            LOGGER.info("From %s search:%s"%(url,ip_str))
             customerIpJson_dict['ip'] = ip_str
             customerIpJson_dict["queryAll"] = "0"
             customerIpJson = json.dumps(customerIpJson_dict).replace(" ", "")
@@ -218,36 +237,37 @@ class IPHandle(object):
                     if retry == 5:
                         LOGGER.info("Connection retry is achieve 5!")
                         LOGGER.info(e)
-
+            
             if len(result_content) != 0 and dberror == 0 and dbinsert and dbsearch:
-                try:
-                    for item in result_content:
-                        ipint = socket.ntohl(struct.unpack("I",socket.inet_aton(str(item['ip'])))[0])
-                        item['ipint'] = ipint
+                for item in result_content:
+                    try:
+                        item['ipint'] = socket.ntohl(struct.unpack("I",socket.inet_aton(str(item['ip'])))[0])
                         insert_str = dbinsert.format(**item)
                         cursor.execute(insert_str)
                         conn.commit()
                         LOGGER.info("IP %s insert ipbehaviour.db coudip successful!"%(item['ip']))
-                except sqlite3.IntegrityError:
-                    LOGGER.info("IP %s insert ipbehaviour.db failed,because db already have this item."%(item['ip']))
-                finally:
-                    conn.close()
-                LOGGER.info("From %s:"%(url))
-            result = result_content
+                    except sqlite3.IntegrityError:
+                        LOGGER.info("IP %s insert ipbehaviour.db failed,because db already have this item."%(item['ip']))
+                conn.close()
+            ## combine db result and o2 result
+            if len(dbitems) > 0:
+                result = dbitems
+                result.extend(result_content)
+            else:
+                result = result_content
+            return result
         else:
-            keys = ('ipint','ip','status','customerOperateTime','operator','reportTime','dataCenter' \
-                    'commodityName','customerName','consoleAccount','isBackUp','saleName','org','phone')
-            if len(dbselect_result) != 0:
-                for item in dbselect_result:
-                    combine = dict(zip(keys,item))
-                    dbitems.append(combine)
-                LOGGER.info("From ipbehaviour.db couldip:")
+            for item in dbselect_result:
+                combine = dict(zip(dbkeys,item))
+                dbitems.append(combine)
+            LOGGER.info("From ipbehaviour.db couldip:")
             result = dbitems
-        LOGGER.info(result)
-        return result
+            conn.close()
+            LOGGER.info(result)
+            return result
 
     @classmethod
-    def get_wangsuip(cls):
+    def db_wsip(cls):
         conn = sqlite3.connect(IPBEHAVIOUR_DB)
         cursor = conn.cursor()
         select_str = 'select ip from cloudip'
@@ -261,7 +281,21 @@ class IPHandle(object):
         finally:
             conn.close()
         return wangsu_iplist
-
+    
+    def get_wsip(self):
+        wsip = []
+        if self.http_log_content is None or len(self.http_log_content)==0:
+            raise ValueError("http_log_content is empty or not ,please use read_http_log!")
+        df = self.http_log_content        
+        src_ip_set = set(df['src_ip'])
+        #for item in src_ip_set:
+        result = self.search_userip(ip=list(src_ip_set))
+        if len(result) > 0:
+            wsip = [item['ip'] for item in result]
+        print(wsip)
+            #if len(result) !=0:
+                #wsip.append(result)
+        return wsip
 #     def feature_engine(self,dbscan=True,cblof=True):
 #         engine = Feature_engine(self.http_log_content)
 #         if dbscan:
