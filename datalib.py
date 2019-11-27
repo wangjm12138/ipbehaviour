@@ -120,10 +120,15 @@ class IPHandle(object):
                 "customerIpJson":{"ip":"xxx","queryAll":"0"},
                 "certId":"certId",
                 "o2Security":base64(sha1("{certId}customerIpJson={"ip"="xxx","queryAll"="0"}{certKey}"))
-            程序：先查询DB表->成功返回
-            ->item不存在或者db错误->访问O2接口(retry次数5)->db正常，插入查询结果并返回
-                                          ->db不正常，返回查询结果
-           
+            程序：
+            输入一个IP或者IP列表，先查询DB表->dbsearch标志是否打开：
+            ->打开->查询db->db查询是否发生错误->否->当IP是列表db是否查全->否->组成剩余IP进行O2查询->o2search标志...(下同)->组合db和o2结果
+                                                    ->是->返回db结果
+                                  ->是->查询o2接口->o2search标志...(下同)
+            ->否：
+              ->查询o2接口->o2search标志是否打开->是->o2接口查询IP结果->插入dinsert标志是否打开->是->o2结果插入db并返回
+                                                                   ->否->直接返回o2结果
+
         """
         #global cfgpath
         global IPBEHAVIOUR_DB
@@ -282,14 +287,15 @@ class IPHandle(object):
             conn.close()
         return wangsu_iplist
     
-    def get_wsip(self):
+    def get_wsip(self,dbinsert=True,dbsearch=True,o2search=True,config=None):
         wsip = []
         if self.http_log_content is None or len(self.http_log_content)==0:
             raise ValueError("http_log_content is empty or not ,please use read_http_log!")
         df = self.http_log_content        
         src_ip_set = set(df['src_ip'])
         #for item in src_ip_set:
-        result = self.search_userip(ip=list(src_ip_set))
+        result = self.search_userip(ip=list(src_ip_set),dbinsert=dbinsert,\
+                                    dbsearch=dbsearch,o2search=o2search,config=config)
         if len(result) > 0:
             wsip = [item['ip'] for item in result]
         print(wsip)

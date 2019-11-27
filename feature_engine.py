@@ -81,13 +81,25 @@ class Feature_engine(object):
             
         return H_IP1,H_IP2,H_IP3,H_IP4 
 
+    def dbscan_http_feature(self,ws_ipall=None):
+        """ ws_ipall包含全部网宿云ip，src_ip_set既有包含部分网宿云ip也有包含外部ip
+          src_ip_set-ws_ipall 找出外部的ip
+          src_ip_set - os_ipset 找到网宿云ip
+          七层特征：流数目，不同对端数，平均对端数的流条目，状态码的熵，时间间隔熵，\
+                  平均时间间隔时长，请求方法熵，url的
+       """
+         feature_columns=['flow_num','num_of_peers','mean_flows_per_peer','H_status',\
+                          'H_time_interval','mean_time_interval','H_method',''] 
+        
 
-    def dbscan_feature(self,ws_ipall=None):
+    def dbscan_ip4_feature(self,ws_ipall=None):
         """ws_ipall包含全部网宿云ip，src_ip_set既有包含部分网宿云ip也有包含外部ip
           src_ip_set-ws_ipall 找出外部的ip
           src_ip_set - os_ipset 找到网宿云ip
+          四层的特征选取：不同目的IP数，第1~4类IP的熵，平均不同目的IP数所使用的不同源端口数，源端口熵
+          平均不同目的IP数所使用的不同目的端口数，目的端口熵，平均不同目的IP数的流条目。
         """
-        feature = None
+        #feature = None
         H_IP1,H_IP2,H_IP3,H_IP4 = 0,0,0,0
         H_srcprt,H_dstprt = 0,0
         df = self.http_log_content        
@@ -97,35 +109,55 @@ class Feature_engine(object):
         else:
             os_ipset = src_ip_set - set(ws_ipall)
             ws_ipset = src_ip_set - os_ipset
-        feature_columns=['num_of_peers','H_IP1','H_IP2','H_IP3','H_IP4','num_of_srcprts','H_srcprt', \
-                   'num_of_dstprts','H_dstprt','mean_flows_per_peer'] 
+        feature_columns=['num_of_peers','H_IP1','H_IP2','H_IP3','H_IP4','srcprts_per_peers','H_srcprt', \
+                   'dstprts_per_peers','H_dstprt','mean_flows_per_peer'] 
 #                  'num_of_dstprts','H_dstprt','mean_pkts_per_flow','mean_pkts_size','mean_flows_per_peer']
         ws_tb = pd.DataFrame(index = list(ws_ipset),columns = feature_columns)
         os_tb = pd.DataFrame(index = list(os_ipset),columns = feature_columns)
+        all_tb = pd.DataFrame(index = list(os_ipset),columns = feature_columns)
         for item in src_ip_set:
+            src_ip_table = df[df['src_ip'] == item]
+            num_of_peers = len(set(src_ip_table['dest_ip']))
+            num_of_srcprts = len(set(src_ip_table['src_port']))
+            num_of_dstprts = len(set(src_ip_table['dest_port']))
+            srcprts_per_peers = num_of_srcprts/num_of_peers
+            dstprts_per_peers = num_of_dstprts/num_of_peers
+            tmp_dest_ip_list = list(src_ip_table['dest_ip'])
+            tmp_srcprts = list(src_ip_table['src_port'])
+            tmp_dstprts = list(src_ip_table['dest_port'])
+            mean_flows_per_peer = len(tmp_dest_ip_list)/num_of_peers
+            H_IP1,H_IP2,H_IP3,H_IP4 = self.calcute_ipentropy(tmp_dest_ip_list)
+            H_srcprt = self.calcute_portentropy(tmp_srcprts)
+            H_dstprt = self.calcute_portentropy(tmp_dstprts)
             if item in ws_ipall:
-                src_ip_table = df[df['src_ip'] == item]
-                num_of_peers = len(set(src_ip_table['dest_ip']))
-                num_of_srcprts = len(set(src_ip_table['src_port']))
-                num_of_dstprts = len(set(src_ip_table['dest_port']))
-                tmp_dest_ip_list = list(src_ip_table['dest_ip'])
-                tmp_srcprts = list(src_ip_table['src_port'])
-                tmp_dstprts = list(src_ip_table['dest_port'])
-                H_IP1,H_IP2,H_IP3,H_IP4 = self.calcute_ipentropy(tmp_dest_ip_list)
-                H_srcprt = self.calcute_portentropy(tmp_srcprts)
-                H_dstprt = self.calcute_portentropy(tmp_dstprts)
                 ws_tb['num_of_peers'][item] = num_of_peers
-                ws_tb['num_of_srcprts'][item] = num_of_srcprts
-                ws_tb['num_of_dstprts'][item] = num_of_dstprts
-                ws_tb['mean_flows_per_peer'][item] = len(tmp_dest_ip_list)/num_of_peers
+                ws_tb['srcprts_per_peers'][item] = srcprts_per_peers
+                ws_tb['dstprts_per_peers'][item] = dstprts_per_peers
+                ws_tb['mean_flows_per_peer'][item] = mean_flows_per_peer
                 ws_tb['H_IP1'][item] = H_IP1
                 ws_tb['H_IP2'][item] = H_IP2
                 ws_tb['H_IP3'][item] = H_IP3
                 ws_tb['H_IP4'][item] = H_IP4
                 ws_tb['H_srcprt'][item] = H_srcprt
                 ws_tb['H_dstprt'][item] = H_dstprt
-        print(ws_tb)
-        return feature
+            else:
+                os_tb['num_of_peers'][item] = num_of_peers
+                os_tb['srcprts_per_peers'][item] = srcprts_per_peers
+                os_tb['dstprts_per_peers'][item] = dstprts_per_peers
+                os_tb['mean_flows_per_peer'][item] = mean_flows_per_peer
+                os_tb['H_IP1'][item] = H_IP1
+                os_tb['H_IP2'][item] = H_IP2
+                os_tb['H_IP3'][item] = H_IP3
+                os_tb['H_IP4'][item] = H_IP4
+                os_tb['H_srcprt'][item] = H_srcprt
+                os_tb['H_dstprt'][item] = H_dstprt
+        all_tb = ws_tb.append(os_tb)
+        self.dbscan_ws_tb = ws_tb
+        self.dbscan_os_tb = os_tb
+        self.dbscan_all_tb = all_tb
+        #print(ws_tb)
+        #print(os_tb)
+        return all_tb,ws_tb,os_tb
 
 #     def cblof_feature(self):
 #         """
