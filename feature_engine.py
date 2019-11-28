@@ -1,5 +1,7 @@
 import socket
 import struct
+import time
+import math
 import numpy as np
 import pandas as pd
 from utils import check_ip
@@ -44,14 +46,14 @@ class Feature_engine(object):
         else:
             return 0
 
-    def calcute_portentropy(self,port_list):
-        H_Port = 0
-        if len(port_list) != 0:
-            port_set = set(port_list)
-            P_port = [port_list.count(item)/len(port_list) for item in port_set]
-            for i,item in enumerate(port_set):
-                 H_Port += -1 * P_port[i] * np.log2(P_port[i])
-        return H_Port
+    def calcute_entropy(self,item_list):
+        H_item = 0
+        if len(item_list) != 0:
+            item_set = set(item_list)
+            P_item = [item_list.count(item)/len(item_list) for item in item_set]
+            for i,item in enumerate(item_set):
+                 H_item += -1 * P_item[i] * np.log2(P_item[i])
+        return H_item
         
     def calcute_ipentropy(self,dest_ip_list):
         """
@@ -81,16 +83,103 @@ class Feature_engine(object):
             
         return H_IP1,H_IP2,H_IP3,H_IP4 
 
+    def data_clean(self,input_data=None):
+        if input_data is not None:
+            data = input_data
+        else:
+            data = self.http_log_content
+        data = data[data['protocol']!='-']
+        data = data[data['method']!='-']
+        data = data[data['status']!='-']
+        return data
+    
+    def _http_status_time_method(self,status_list,time_list,method_list):
+        #print(time_list)
+        #print(status_list)
+        #print(method_list)
+        new_time,time_interval = [],[]
+        time_sec_part,time_us_part,time_us_all = 0.0,0.0,0.0
+        H_status = self.calcute_entropy(status_list)
+        H_method = self.calcute_entropy(method_list)
+        for item in time_list:
+            if item != '-' or item is not None:
+                time_format = item.split('.')[0]
+                time_us_part  = float(item.split('.')[1])
+                time_struct = time.strptime(time_format, '%m/%d/%y-%H:%M:%S')
+                time_sec_part = time.mktime(time_struct)
+                time_us_all = time_sec_part + time_us_part*math.pow(10, -6)
+                new_time.append(time_us_all)
+        if len(new_time) >1:
+            time_interval = [new_time[i+1]-new_time[i] for i in range(len(new_time)-1)]
+            mean_time_interval = sum(time_interval)/len(time_interval)
+            #print(time_sec_part,time_us_part,)
+            H_time_interval = self.calcute_entropy(time_interval)
+        elif len(new_time) == 1:
+            time_interval = -1
+            mean_time_interval = -1
+            H_time_interval = -1
+        else:
+            time_interval = -2
+            mean_time_interval = -2
+            H_time_interval = -2
+
+        return H_status,H_method,H_time_interval,mean_time_interval
+    
     def dbscan_http_feature(self,ws_ipall=None):
         """ ws_ipall包含全部网宿云ip，src_ip_set既有包含部分网宿云ip也有包含外部ip
           src_ip_set-ws_ipall 找出外部的ip
           src_ip_set - os_ipset 找到网宿云ip
           七层特征：流数目，不同对端数，平均对端数的流条目，状态码的熵，时间间隔熵，\
-                  平均时间间隔时长，请求方法熵，url的
+                  平均时间间隔时长，请求方法熵
        """
-         feature_columns=['flow_num','num_of_peers','mean_flows_per_peer','H_status',\
-                          'H_time_interval','mean_time_interval','H_method',''] 
-        
+
+        feature_columns=['flow_num','num_of_peers','mean_flows_per_peer','H_status',\
+                          'H_time_interval','mean_time_interval','H_method']
+        os_ipset,ws_ipset = set(),set()
+        data = self.data_clean()
+        df = data
+        #print(df)
+        src_ip_set = set(df['src_ip'])
+        if ws_ipall is None:
+            ws_ipall = []
+        else:
+            os_ipset = src_ip_set - set(ws_ipall)
+            ws_ipset = src_ip_set - os_ipset
+        ws_tb = pd.DataFrame(index = list(ws_ipset),columns = feature_columns)
+        os_tb = pd.DataFrame(index = list(os_ipset),columns = feature_columns)
+        all_tb = pd.DataFrame(index = list(os_ipset),columns = feature_columns)
+        for item in src_ip_set:
+            src_ip_table = df[df['src_ip'] == item]
+            flow_num = len(src_ip_table['dest_ip'])
+            num_of_peers = len(set(src_ip_table['dest_ip']))
+            mean_flows_per_peer = flow_num/num_of_peers
+            status_list = list(src_ip_table['status'])
+            timestamp_list = list(src_ip_table['timestamp'])
+            method_list = list(src_ip_table['method'])
+            H_status,H_method,H_time_interval,mean_time_interval = \
+                         self._http_status_time_method(status_list,timestamp_list,method_list)
+            if item in ws_ipall:
+                ws_tb['flow_num'][item] = flow_num
+                ws_tb['num_of_peers'][item] = num_of_peers
+                ws_tb['mean_flows_per_peer'][item] = mean_flows_per_peer
+                ws_tb['H_status'][item] = H_status
+                ws_tb['H_method'][item] = H_method
+                #print(H_time_interval)
+                ws_tb['H_time_interval'][item] = H_time_interval
+                ws_tb['mean_time_interval'][item] = mean_time_interval
+            else:
+                os_tb['flow_num'][item] = flow_num
+                os_tb['num_of_peers'][item] = num_of_peers
+                os_tb['mean_flows_per_peer'][item] = mean_flows_per_peer
+                os_tb['H_status'][item] = H_status
+                os_tb['H_method'][item] = H_method
+                os_tb['H_time_interval'][item] = H_time_interval
+                os_tb['mean_time_interval'][item] = mean_time_interval
+        all_tb = ws_tb.append(os_tb)
+        self.dbscan_http_ws_tb = ws_tb
+        self.dbscan_http_os_tb = os_tb
+        self.dbscan_http_all_tb = all_tb
+        return all_tb,ws_tb,os_tb
 
     def dbscan_ip4_feature(self,ws_ipall=None):
         """ws_ipall包含全部网宿云ip，src_ip_set既有包含部分网宿云ip也有包含外部ip
@@ -102,6 +191,7 @@ class Feature_engine(object):
         #feature = None
         H_IP1,H_IP2,H_IP3,H_IP4 = 0,0,0,0
         H_srcprt,H_dstprt = 0,0
+        os_ipset,ws_ipset = set(),set()
         df = self.http_log_content        
         src_ip_set = set(df['src_ip'])
         if ws_ipall is None:
@@ -127,8 +217,8 @@ class Feature_engine(object):
             tmp_dstprts = list(src_ip_table['dest_port'])
             mean_flows_per_peer = len(tmp_dest_ip_list)/num_of_peers
             H_IP1,H_IP2,H_IP3,H_IP4 = self.calcute_ipentropy(tmp_dest_ip_list)
-            H_srcprt = self.calcute_portentropy(tmp_srcprts)
-            H_dstprt = self.calcute_portentropy(tmp_dstprts)
+            H_srcprt = self.calcute_entropy(tmp_srcprts)
+            H_dstprt = self.calcute_entropy(tmp_dstprts)
             if item in ws_ipall:
                 ws_tb['num_of_peers'][item] = num_of_peers
                 ws_tb['srcprts_per_peers'][item] = srcprts_per_peers
@@ -152,9 +242,9 @@ class Feature_engine(object):
                 os_tb['H_srcprt'][item] = H_srcprt
                 os_tb['H_dstprt'][item] = H_dstprt
         all_tb = ws_tb.append(os_tb)
-        self.dbscan_ws_tb = ws_tb
-        self.dbscan_os_tb = os_tb
-        self.dbscan_all_tb = all_tb
+        self.dbscan_ip4_ws_tb = ws_tb
+        self.dbscan_ip4_os_tb = os_tb
+        self.dbscan_ip4_all_tb = all_tb
         #print(ws_tb)
         #print(os_tb)
         return all_tb,ws_tb,os_tb

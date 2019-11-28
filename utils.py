@@ -37,7 +37,7 @@ def check_content(fuc):
 	@wraps(fuc)
 	def wrapper(*args,**kwargs):
 		if kwargs.get('http_log_content'):
-				content = kwargs['ip']
+				content = kwargs['http_log_content']
 		else:
 				content = args[1]
 		if type(content) == pd.core.frame.DataFrame:

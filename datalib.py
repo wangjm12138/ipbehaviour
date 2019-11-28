@@ -8,11 +8,13 @@ import base64
 import hashlib
 import socket
 import struct
+import time
 from utils import check_ip
 from utils import Configuration 
 from utils import MyLogger
 config = Configuration()
 LOGGER_CONTROL  = MyLogger("IPhandler",config=config)
+LOGGER_CONTROL.disable_console()
 LOGGER_CONTROL.disable_file()
 LOGGER = LOGGER_CONTROL.getLogger()
 
@@ -322,7 +324,7 @@ class IPHandle(object):
 #             self.cblof_feature = engine.cblof_feature()
 #         return self.dbscan_feature,self.cblof_feature
     
-    def read_http_log(self,flag=True):
+    def read_http_log(self,columns=None):
         """
            http_log_content is transform log -> dataframe type
            every line in log is a row in dataframe type.clumns is [timestamp protocol method host....dest_port]
@@ -331,19 +333,41 @@ class IPHandle(object):
           1 ..
           2 ..
         """
+        start = time.time()
+        dict_keys=['timestamp','xff','protocol','method','host','params', \
+            'status','size','src_ip','src_port','dest_ip','dest_port']
         src_ip_list=[]
-        
-        dict_keys=('timestamp','protocol','method','host','params', \
-						'status','size','src_ip','src_port','dest_ip','dest_port')
-        if self.http_log is None:
-            LOGGER.info("No http_log file")
-            return
-        with open(self.http_log) as f:
-            for line in f:
-                line_item = line.split()
-                timestamp,protocol,method,host,params,status,size,src_ip,src_port,dest_ip,dest_port = line_item
-                values = (timestamp,protocol,method,host,params, \
-                  status,size,src_ip,src_port,dest_ip,dest_port)
-                content = {k:v for k,v in zip(dict_keys,values)}
-                self.http_log_content = self.http_log_content.append(content,ignore_index=True)
+        error_count = 0
+        if columns is None:
+            names = dict_keys
+        else:
+            names = columns
+        try:
+            self.http_log_content = pd.read_table(self.http_log,header=None,sep='\t',index_col=None,names=names)
+        except Exception as e:
+            LOGGER.error("Read log file error")
+            print(e)
+#         if self.http_log is None:
+#             LOGGER.info("No http_log file")
+#             return
+#         with open(self.http_log) as f:
+#             for i,line in enumerate(f):
+#                 #print(line)
+#                 line_item = line.split()
+#                 #print(len(line_item))
+#                 try:
+#                     timestamp,xff,protocol,method,host,params,status,size,src_ip,src_port,dest_ip,dest_port = line_item
+#                 except Exception as e:
+#                     LOGGER.error("Read line error! line:%s,error:%s"%(line,e))
+#                     error_count = error_count + 1
+#                     if error_count > 100 and error_count > i*0.5:
+#                         raise ValueError('The format of log file error over 50%')
+#                     else:
+#                         continue
+#                 values = (timestamp,protocol,method,host,params, \
+#                   status,size,src_ip,src_port,dest_ip,dest_port)
+#                 content = {k:v for k,v in zip(dict_keys,values)}
+#                 self.http_log_content = self.http_log_content.append(content,ignore_index=True)
+        end = time.time()
+        print(end-start)
         return self.http_log_content
