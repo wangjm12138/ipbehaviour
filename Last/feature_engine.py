@@ -4,6 +4,7 @@ import struct
 import time
 import math
 import pickle
+import random
 #import Levenshtein
 import numpy as np
 import pandas as pd
@@ -26,8 +27,11 @@ class Feature_engine(object):
 		ac_tree = './ac/dir_traver.pkl'
 		with open(ac_tree,'br') as f:
 			self.dir_traver_ac = pickle.load(f)
+		#self.feature_columns=['Sum_sec_flow','Feq_sec_flow','Sum_xss','Feq_xss','Sum_dir','Feq_dir',\
+		#				'Sum_404_error','Feq_404_error','H_status','src_ip','dest_ip','Malics_urls']
 		self.feature_columns=['Sum_sec_flow','Feq_sec_flow','Sum_xss','Feq_xss','Sum_dir','Feq_dir',\
-						'Sum_404_error','Feq_404_error','H_status','src_ip','dest_ip','Malics_urls']
+						'Sum_404_error','Feq_404_error','H_status','Cls_url','Sum_packets','Mean_packets',\
+						'src_ip','dest_ip','Malics_urls',]
 
 	@property
 	def content(self):
@@ -46,7 +50,7 @@ class Feature_engine(object):
 		#过滤掉nids没有解析的字段的条目
 		data = data[data['protocol']!='-']
 		data = data[data['method']!='-']
-		data = data[data['status']!='-']
+		#data = data[data['status']!='-']
 		data = data[data['dest_ip'].notnull()]
 		data = data[data['dest_port'].notnull()]
 		#过滤掉只有一条流的源IP,程序先找出不重复的，再用总集-不重复
@@ -109,7 +113,29 @@ class Feature_engine(object):
 		return Sum_dir,Feq_dir
 
 	def status_transform(self,status_list):
+		"""status_list由于有没解析的部分'-'，所以按照原先一定概率补全没解析的
+			例如status_list = ['200','200','404','-','302']
+			其中200有2个，404一个，302一个，则'-'，有50%概率是200，20%是404或者302
+		"""
 		Sum_404_error,Feq_404_error,H_status = 0,0,0
+		
+		unresolved_num = status_list.count('-')
+		if unresolved_num == len(status_list):
+			Sum_404_error = -1	
+			Feq_404_error = -1	
+			H_status = -1
+			return Sum_404_error,Feq_404_error,H_status
+		resolved_set = set(status_list) - set('-')
+		resolved_dict = {x:status_list.count(x) for x in resolved_set}
+		resolved_keys = list(resolved_dict.keys())
+		resolved_values = list(resolved_dict.values())
+		num_range = [sum(resolved_values[0:i+1]) for i,j in enumerate(resolved_values)]
+		##构建新的status_list
+		status_list = filter(lambda x:x =='-',status_list)
+		for i in range(unresolved_num):
+			random_num = random.uniform(0,num_range[-1])
+			status_list.append()
+		
 		str_404 = status_list.count('404')
 		int_404 = status_list.count(404)
 		if str_404 > int_404:
